@@ -21,8 +21,9 @@ jobs:
       uses: actions/checkout@v3
 
     - name: Run Other Workflow
-      uses: ./.github/actions/build_with_proxy
+      uses: ./.github/workflows/build_with_proxy.yml
       id: other-workflow  
+      
     - env: 
         SCAN_ID: ${{ needs.create_scan_in_IR_Portal.outputs.scan_id }}
       run: echo $SCAN_ID
