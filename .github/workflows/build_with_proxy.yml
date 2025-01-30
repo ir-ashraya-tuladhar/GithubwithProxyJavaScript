@@ -1,0 +1,38 @@
+name: Other Workflow
+
+on:
+  workflow_call:  # This allows the workflow to be called by other workflows
+
+jobs:
+  test-job:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          
+      - name: Install dependencies
+        run: npm install
+        
+      - name: Run tests
+        run: npm test
+        
+      # Example of additional steps
+      - name: Build application
+        run: npm run build
+        
+      - name: Run linting
+        run: npm run lint
+
+  deploy-job:
+    needs: test-job  # This job will only run if test-job succeeds
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy step
+        run: |
+          echo "Deployment would happen here"
+          # Add your deployment commands
