@@ -17,6 +17,9 @@ jobs:
       matrix:
         node-version: [18.x]
     steps:
+    - name: Checkout the code
+      uses: actions/checkout@v3
+
     - name: Run Other Workflow
       uses: ./.github/actions/build_with_proxy
       id: other-workflow  
