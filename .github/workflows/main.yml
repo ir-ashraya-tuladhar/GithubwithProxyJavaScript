@@ -10,25 +10,31 @@ on:
 jobs:
   primary-job:
     runs-on: ubuntu-latest
+    container:
+      image: node:18-alpine
+      options: --cap-add=NET_ADMIN
+    strategy:
+      matrix:
+        node-version: [18.x]
     steps:
-      - uses: actions/checkout@v3
-      
-      # First, run the other workflow file
-      - name: Run Other Workflow
-        uses: ./.github/workflows/build_with_proxy.yml
-        id: other-workflow
-        continue-on-error: true  # This allows us to check the outcome
-      
-      # Only continue if the other workflow succeeded
-      - name: Continue if previous workflow succeeded
-        if: steps.other-workflow.outcome == 'success'
-        run: |
-          echo "Other workflow succeeded, continuing with next steps..."
-          # Add your additional steps here
-          
-      # Stop if the other workflow failed
-      - name: Stop if previous workflow failed
-        if: steps.other-workflow.outcome != 'success'
-        run: |
-          echo "Other workflow failed, stopping execution"
-          exit 1
+    - name: Run Other Workflow
+      uses: ./.github/workflows/build_with_proxy.yml
+      id: other-workflow
+      continue-on-error: true  
+    - env: 
+        SCAN_ID: ${{ needs.create_scan_in_IR_Portal.outputs.scan_id }}
+      run: echo $SCAN_ID
+    - uses: invisirisk/pse-action@v1.0.7
+      with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          SCAN_ID: ${{ needs.create_scan_in_IR_Portal.outputs.scan_id }}
+    - name: Checkout the code
+      uses: actions/checkout@v3
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ matrix.node-version }}
+    - run: npm install
+    - run: npm ci
+    - run: npm run build --if-present
+    - run: npm test
