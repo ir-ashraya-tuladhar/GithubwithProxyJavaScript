@@ -19,8 +19,7 @@ jobs:
     steps:
     - name: Run Other Workflow
       uses: ./.github/actions/build_with_proxy
-      id: other-workflow
-      continue-on-error: true  
+      id: other-workflow  
     - env: 
         SCAN_ID: ${{ needs.create_scan_in_IR_Portal.outputs.scan_id }}
       run: echo $SCAN_ID
