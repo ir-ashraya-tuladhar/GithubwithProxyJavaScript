@@ -1,31 +1,34 @@
-name: Run External Action and Handle Failure
+name: Main Workflow
 
 on:
   push:
-    branches:
-      - main
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
 
 jobs:
-  run-external-action:
+  primary-job:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-
-      - name: Run External Action
-        id: external-action
-        uses: ./.github/actions/external-action
-        with:
-          input-parameter: 'default-value' # Replace with your desired input
-
-      - name: Check if External Action Succeeded
-        if: steps.external-action.outcome == 'failure'
+      - uses: actions/checkout@v3
+      
+      # First, run the other workflow file
+      - name: Run Other Workflow
+        uses: ./.github/workflows/build_with_proxy.yml
+        id: other-workflow
+        continue-on-error: true  # This allows us to check the outcome
+      
+      # Only continue if the other workflow succeeded
+      - name: Continue if previous workflow succeeded
+        if: steps.other-workflow.outcome == 'success'
         run: |
-          echo "External Action failed. Stopping workflow."
+          echo "Other workflow succeeded, continuing with next steps..."
+          # Add your additional steps here
+          
+      # Stop if the other workflow failed
+      - name: Stop if previous workflow failed
+        if: steps.other-workflow.outcome != 'success'
+        run: |
+          echo "Other workflow failed, stopping execution"
           exit 1
-
-      - name: Continue if External Action Succeeded
-        if: steps.external-action.outcome == 'success'
-        run: |
-          echo "External Action succeeded. Continuing workflow."
