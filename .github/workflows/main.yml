@@ -21,7 +21,7 @@ jobs:
       uses: actions/checkout@v3
 
     - name: Run Other Workflow
-      uses: ./.github/actions/build_with_proxy
+      uses: ./.github/actions/build-with-proxy
       id: other-workflow  
       
     - env: 
